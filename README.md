@@ -57,7 +57,7 @@ Rust is a systems programming language that emphasizes safety, speed, and concur
 ### Clone the Repository
 
 ```bash
-git clone https://github.com/<your-username>/rust-learning-repo.git
+git clone https://github.com/cesco345/rust-learning-repo.git
 cd rust-learning-repo
 
 Running Examples
