@@ -1,0 +1,15 @@
+[workspace]
+members = [
+    ".",
+    "common",
+    "client",
+    "server"
+]
+
+[package]
+name = "chapter_7"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+common = { path = "./common" }

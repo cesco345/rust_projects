@@ -1,0 +1,1 @@
+/Users/dev/Desktop/Rust/projects/chapter_7/target/debug/complete_task: /Users/dev/Desktop/Rust/projects/chapter_7/common/src/lib.rs /Users/dev/Desktop/Rust/projects/chapter_7/src/bin/complete_task.rs /Users/dev/Desktop/Rust/projects/chapter_7/src/geometry.rs /Users/dev/Desktop/Rust/projects/chapter_7/src/lib.rs
