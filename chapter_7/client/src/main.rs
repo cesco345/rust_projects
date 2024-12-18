@@ -1,18 +1,36 @@
-use serde::{Deserialize, Serialize};
+use common::{ConnectionStatus, Message, MessageHandler};
 
-#[derive(Debug, Serialize, Deserialize)]
-pub enum Message {
-    Text(String),
-    Status(ConnectionStatus),
+struct Client {
+    connection_status: ConnectionStatus,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
-pub enum ConnectionStatus {
-    Connected,
-    Disconnected,
-    Error(String),
+impl Client {
+    fn new() -> Self {
+        Client {
+            connection_status: ConnectionStatus::Disconnected,
+        }
+    }
+
+    fn connect(&mut self) {
+        self.connection_status = ConnectionStatus::Connected;
+        println!("Client connected");
+    }
 }
 
-pub trait MessageHandler {
-    fn handle_message(&mut self, message: Message);
+impl MessageHandler for Client {
+    fn handle_message(&mut self, message: Message) {
+        match message {
+            Message::Text(text) => println!("Received: {}", text),
+            Message::Status(status) => {
+                self.connection_status = status;
+                println!("Connection status changed: {:?}", self.connection_status);
+            }
+        }
+    }
+}
+
+fn main() {
+    let mut client = Client::new();
+    client.connect();
+    client.handle_message(Message::Text("Hello from client!".to_string()));
 }
