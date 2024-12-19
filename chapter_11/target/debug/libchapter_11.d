@@ -1,0 +1,1 @@
+/Users/dev/Desktop/Rust/projects/chapter_11/target/debug/libchapter_11.rlib: /Users/dev/Desktop/Rust/projects/chapter_11/src/calculator.rs /Users/dev/Desktop/Rust/projects/chapter_11/src/lib.rs /Users/dev/Desktop/Rust/projects/chapter_11/src/string_utils.rs /Users/dev/Desktop/Rust/projects/chapter_11/src/user_manager.rs
