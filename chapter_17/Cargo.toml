@@ -1,0 +1,19 @@
+[package]
+name = "chapter_17"
+version = "0.1.0"
+edition = "2021"
+
+# Enable multiple binary targets
+[[bin]]
+name = "chapter_17"
+path = "src/main.rs"
+
+[[bin]]
+name = "library_system"
+path = "src/bin/library_system.rs"
+
+[[bin]]
+name = "shopping_cart"
+path = "src/bin/shopping_cart.rs"
+
+[dependencies]
