@@ -1,0 +1,20 @@
+[package]
+name = "chapter_14"
+version = "0.1.0"
+edition = "2021"
+
+[workspace]
+members = [
+    "art",
+    "add_one",
+    "add_two",
+    "multiply_utils",
+    "my_crate"
+]
+
+[dependencies]
+art = { path = "./art" }
+add_one = { path = "./add_one" }
+add_two = { path = "./add_two" }
+multiply_utils = { path = "./multiply_utils" }
+my_crate = { path = "./my_crate" }
