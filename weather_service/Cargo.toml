@@ -1,0 +1,24 @@
+[package]
+name = "weather_service"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+tokio = { version = "1.0", features = ["full"] }
+warp = "0.3"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+futures = "0.3"
+rand = "0.8"
+
+[[bin]]
+name = "weather_service"
+path = "src/bin/weather_service.rs"
+
+[[bin]]
+name = "file_service"
+path = "src/bin/file_service.rs"
+
+[[bin]]
+name = "broken_file_service"
+path = "src/bin/broken_file_service.rs"

@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Weather Service Demo</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f0f0f0;
+        }
+        .container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .weather-display {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            background-color: #007bff;
+            color: white;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        .loading {
+            display: none;
+            color: #666;
+            font-style: italic;
+        }
+        .error {
+            color: red;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Weather Service Demo</h1>
+        <p>This demo shows the difference between blocking and async operations in Rust.</p>
+        
+        <div class="button-group">
+            <button onclick="fetchBlocking()">Fetch Blocking</button>
+            <button onclick="fetchAsync()">Fetch Async</button>
+            <button onclick="fetchMultiple()">Fetch Multiple</button>
+        </div>
+
+        <div id="loading" class="loading">Loading...</div>
+        <div id="error" class="error">An error occurred</div>
+        
+        <div id="weatherDisplay" class="weather-display">
+            <p>Click a button above to fetch weather data</p>
+        </div>
+    </div>
+
+    <script>
+        async function fetchWeather(endpoint) {
+            const loadingDiv = document.getElementById('loading');
+            const errorDiv = document.getElementById('error');
+            const displayDiv = document.getElementById('weatherDisplay');
+            const buttons = document.querySelectorAll('button');
+
+            // Disable buttons and show loading
+            buttons.forEach(b => b.disabled = true);
+            loadingDiv.style.display = 'block';
+            errorDiv.style.display = 'none';
+            displayDiv.innerHTML = '<p>Fetching weather data...</p>';
+
+            try {
+                const startTime = Date.now();
+                const response = await fetch(endpoint);
+                const data = await response.json();
+                const endTime = Date.now();
+                const totalTime = endTime - startTime;
+
+                let html = '<h3>Weather Report</h3>';
+                if (Array.isArray(data)) {
+                    data.forEach((w, i) => {
+                        html += `
+                            <div class="weather-display">
+                                <h4>Station ${i + 1}</h4>
+                                <p>Temperature: ${w.temperature.toFixed(1)}°C</p>
+                                <p>Humidity: ${w.humidity.toFixed(1)}%</p>
+                                <p>Description: ${w.description}</p>
+                                <p>Individual fetch time: ${w.fetch_time_ms}ms</p>
+                            </div>
+                        `;
+                    });
+                } else {
+                    html += `
+                        <p>Temperature: ${data.temperature.toFixed(1)}°C</p>
+                        <p>Humidity: ${data.humidity.toFixed(1)}%</p>
+                        <p>Description: ${data.description}</p>
+                        <p>Server processing time: ${data.fetch_time_ms}ms</p>
+                    `;
+                }
+                html += `<p><strong>Total request time: ${totalTime}ms</strong></p>`;
+                displayDiv.innerHTML = html;
+            } catch (error) {
+                errorDiv.style.display = 'block';
+                errorDiv.textContent = `Error: ${error.message}`;
+            } finally {
+                loadingDiv.style.display = 'none';
+                buttons.forEach(b => b.disabled = false);
+            }
+        }
+
+        function fetchBlocking() {
+            fetchWeather('/weather/blocking');
+        }
+
+        function fetchAsync() {
+            fetchWeather('/weather/async');
+        }
+
+        function fetchMultiple() {
+            fetchWeather('/weather/multiple');
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Async Data Loss Demo</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f0f0f0;
+        }
+        .container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .transfer-box {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            position: relative;
+        }
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background-color: #f0f0f0;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        .progress-fill {
+            height: 100%;
+            background-color: #4CAF50;
+            transition: width 0.3s ease;
+            position: relative;
+        }
+        .corrupted {
+            position: absolute;
+            height: 100%;
+            background-color: #ff0000;
+            opacity: 0.5;
+        }
+        .missing {
+            position: absolute;
+            height: 100%;
+            background-color: #000000;
+            opacity: 0.3;
+        }
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            background-color: #007bff;
+            color: white;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        button:disabled {
+            background-color: #cccccc;
+        }
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .stat-item {
+            background-color: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        .legend {
+            display: flex;
+            gap: 20px;
+            margin-top: 10px;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Async Data Loss Demonstration</h1>
+        <p>This demo shows how data can be lost or corrupted in async operations if not handled properly.</p>
+
+        <div class="button-group">
+            <button onclick="startTransfer('broken')">Start Broken Transfer</button>
+            <button onclick="startTransfer('fixed')">Start Fixed Transfer</button>
+        </div>
+
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: #4CAF50"></div>
+                <span>Transferred Data</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: #ff0000; opacity: 0.5"></div>
+                <span>Corrupted Data</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: #000000; opacity: 0.3"></div>
+                <span>Missing Data</span>
+            </div>
+        </div>
+
+        <div id="transfers"></div>
+    </div>
+
+    <script>
+        let ws = new WebSocket('ws://localhost:3030/ws');
+        let transfers = new Map();
+
+        function startTransfer(type) {
+            fetch(`http://localhost:3030/transfer/${type}`)
+                .then(response => response.json())
+                .then(data => {
+                    createTransferBox(data.is_broken_transfer);
+                });
+        }
+
+        function createTransferBox(isBroken) {
+            const id = Date.now();
+            const transfersDiv = document.getElementById('transfers');
+            const box = document.createElement('div');
+            box.className = 'transfer-box';
+            box.innerHTML = `
+                <h3>${isBroken ? 'Broken' : 'Fixed'} Transfer</h3>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 0%"></div>
+                </div>
+                <div class="stats">
+                    <div class="stat-item">Bytes Received: <span class="bytes-received">0</span></div>
+                    <div class="stat-item">Total Bytes: <span class="bytes-total">0</span></div>
+                    <div class="stat-item">Corrupted Chunks: <span class="corrupted-chunks">0</span></div>
+                    <div class="stat-item">Missing Chunks: <span class="missing-chunks">0</span></div>
+                </div>
+            `;
+            transfersDiv.insertBefore(box, transfersDiv.firstChild);
+            transfers.set(id, box);
+            
+            // Remove old transfers
+            if (transfersDiv.children.length > 3) {
+                transfersDiv.removeChild(transfersDiv.lastChild);
+            }
+        }
+
+        function updateTransfer(status) {
+            const boxes = document.getElementsByClassName('transfer-box');
+            const box = boxes[0];
+            if (!box) return;
+
+            const progress = (status.bytes_received / status.bytes_total) * 100;
+            const progressBar = box.querySelector('.progress-fill');
+            progressBar.style.width = `${progress}%`;
+
+            // Update corrupted chunks visualization
+            for (let i = 0; i < status.corrupted_chunks; i++) {
+                const corrupted = document.createElement('div');
+                corrupted.className = 'corrupted';
+                const position = Math.random() * (progress - 5);
+                corrupted.style.width = '5px';
+                corrupted.style.left = `${position}%`;
+                progressBar.appendChild(corrupted);
+            }
+
+            // Update missing chunks visualization
+            for (let i = 0; i < status.missing_chunks; i++) {
+                const missing = document.createElement('div');
+                missing.className = 'missing';
+                const position = Math.random() * (progress - 5);
+                missing.style.width = '5px';
+                missing.style.left = `${position}%`;
+                progressBar.appendChild(missing);
+            }
+
+            // Update stats
+            box.querySelector('.bytes-received').textContent = status.bytes_received;
+            box.querySelector('.bytes-total').textContent = status.bytes_total;
+            box.querySelector('.corrupted-chunks').textContent = status.corrupted_chunks;
+            box.querySelector('.missing-chunks').textContent = status.missing_chunks;
+        }
+
+        ws.onmessage = function(event) {
+            const status = JSON.parse(event.data);
+            updateTransfer(status);
+        };
+    </script>
+</body>
+</html>
